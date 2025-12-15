@@ -3,7 +3,9 @@ FROM node:14
 WORKDIR /app
 
 COPY package*.json /app
-RUN yarn install
+# Ensure yarn is available in the base image
+RUN npm install -g yarn \
+	&& yarn install
 
 EXPOSE 8001
 
