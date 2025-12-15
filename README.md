@@ -1,39 +1,84 @@
-# Python Server
+# Anythink Market - Multi-Server Architecture
 
-This project contains a FastAPI server implemented in Python. It provides two routes for managing a task list.
+This project has been migrated from a Python-only server to a multi-server architecture using both Python and Node.js. The project now contains a FastAPI Python server (legacy) and an Express Node.js server (new) for managing a task list.
 
 ## Project Structure
 
 The project has the following files and directories:
 
-- `python-server/src/main.py`: This file contains the implementation of the FastAPI server with two routes. It handles adding a task to a list and retrieving the list.
+### Python Server (Legacy - Port 8000)
+- `python-server/src/main.py`: FastAPI implementation with task management endpoints
+- `python-server/src/__init__.py`: Python package marker
+- `python-server/requirements.txt`: Python dependencies (fastapi, uvicorn)
+- `python-server/Dockerfile`: Docker image configuration for Python server
 
-- `python-server/src/__init__.py`: This file is an empty file that marks the `src` directory as a Python package.
+### Node.js Server (New - Port 8001)
+- `node-server/index.js`: Express.js implementation with migrated endpoints (GET /, POST /tasks, GET /tasks)
+- `node-server/package.json`: Node.js dependencies and scripts (express, nodemon)
+- `node-server/Dockerfile`: Docker image configuration for Node.js server
 
-- `python-server/requirements.txt`: This file lists the dependencies required for the FastAPI server and other dependencies.
-
-- `python-server/Dockerfile`: This file is used to build a Docker image for the FastAPI server. It specifies the base image, copies the source code into the image, installs the dependencies, and sets the command to run the server.
-
-- `docker-compose.yml`: This file is used to define and run multi-container Docker applications. It specifies the services to run, their configurations, and any dependencies between them.
+### Docker Orchestration
+- `docker-compose.yml`: Multi-container orchestration file that runs both Python and Node.js servers
 
 ## Getting Started
 
-To run the FastAPI server using Docker, follow these steps:
+To run both servers using Docker Compose:
 
-- Build and start the Docker containers by running the following command:
+```shell
+docker compose up --build
+```
 
-  ```shell
-  docker compose up
-  ```
-
-  This command will build the Docker image for the FastAPI server and start the containers defined in the `docker-compose.yml` file.
-
-- The FastAPI server should now be running. You can access at port `8000`.
+This command will:
+- Build Docker images for both the Python and Node.js servers
+- Start both containers on their respective ports
+- Mount volumes for hot-reloading during development
 
 ## API Routes
 
-The FastAPI server provides the following API routes:
+### Node.js Server (Port 8001) - **Primary**
+- `GET /`: Returns "Hello World"
+- `POST /tasks`: Adds a task to the task list. Request body: `{"text": "task description"}`
+- `GET /tasks`: Retrieves all tasks in the list
 
-- `POST /tasks`: Adds a task to the task list. The request body should contain the task details.
+### Python Server (Port 8000) - **Legacy**
+- `GET /`: Returns "Hello World"
+- `POST /tasks`: Adds a task to the task list. Request body: `{"text": "task description"}`
+- `GET /tasks`: Retrieves all tasks in the list
 
-- `GET /tasks`: Retrieves the task list.
+## Testing Endpoints
+
+### Node.js Server (Port 8001)
+```bash
+# Get root
+curl http://localhost:8001/
+
+# Get all tasks
+curl http://localhost:8001/tasks
+
+# Add a new task
+curl -X POST http://localhost:8001/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"text":"New task"}'
+```
+
+### Python Server (Port 8000)
+```bash
+# Get root
+curl http://localhost:8000/
+
+# Get all tasks
+curl http://localhost:8000/tasks
+
+# Add a new task
+curl -X POST http://localhost:8000/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"text":"New task"}'
+```
+
+## Development
+
+Both servers support hot-reloading:
+- **Python Server**: Uses uvicorn with `--reload` flag
+- **Node.js Server**: Uses nodemon to watch for file changes
+
+To develop locally, simply edit the files and the servers will automatically restart.
